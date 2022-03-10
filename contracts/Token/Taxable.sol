@@ -27,7 +27,6 @@ abstract contract Taxable is Owned, Tradable {
         uint8 rewardsFee;
         uint8 marketingFee;
         uint8 teamFee;
-        uint8 charityFee;
         uint8 liqFee;
     }
 
@@ -37,7 +36,6 @@ abstract contract Taxable is Owned, Tradable {
     address payable public _devAddress;
     address payable public _marketingAddress;
     address payable public _teamAddress;
-    address payable public _charityAddress;
     //
     uint256 public _liquifyThreshhold;
     bool inSwapAndLiquify;
@@ -54,7 +52,6 @@ abstract contract Taxable is Owned, Tradable {
     uint256 private _rewardsTokensCollected;
     uint256 private _marketingTokensCollected;
     uint256 private _teamTokensCollected;
-    uint256 private _charityTokensCollected;
     uint256 private _liqTokensCollected;
     //
     mapping (address => bool) private _isExcludedFromFees;
@@ -71,7 +68,6 @@ abstract contract Taxable is Owned, Tradable {
                 address payable devAddress,
                 address payable marketingAddress,
                 address payable teamAddress,
-                address payable charityAddress,
                 Taxes memory buyTaxes,
                 Taxes memory sellTaxes,
                 uint8 maxFees, 
@@ -81,11 +77,10 @@ abstract contract Taxable is Owned, Tradable {
         _devAddress = devAddress;
         _marketingAddress = marketingAddress;
         _teamAddress = teamAddress;
-        _charityAddress = charityAddress;
         _buyTaxes = buyTaxes;
         _sellTaxes = sellTaxes;
-        _totalBuyTaxes = buyTaxes.devFee + buyTaxes.rewardsFee + buyTaxes.marketingFee + buyTaxes.teamFee + buyTaxes.charityFee + buyTaxes.liqFee;
-        _totalSellTaxes = sellTaxes.devFee + sellTaxes.rewardsFee + sellTaxes.marketingFee + sellTaxes.teamFee + sellTaxes.charityFee + sellTaxes.liqFee;
+        _totalBuyTaxes = buyTaxes.devFee + buyTaxes.rewardsFee + buyTaxes.marketingFee + buyTaxes.teamFee + buyTaxes.liqFee;
+        _totalSellTaxes = sellTaxes.devFee + sellTaxes.rewardsFee + sellTaxes.marketingFee + sellTaxes.teamFee + sellTaxes.liqFee;
         _maxFees = maxFees;
         _maxDevFee = maxDevFee;
         _liquifyThreshhold = liquifyThreshhold;
@@ -111,11 +106,6 @@ abstract contract Taxable is Owned, Tradable {
         _teamAddress = newTeamAddress;
     }
 
-    function setCharityAddress(address payable newCharityAddress) external onlyOwner() {
-        require(newCharityAddress != _charityAddress);
-        _charityAddress = newCharityAddress;
-    }
-
     function includeInFees(address account) public onlyOwner {
         _isExcludedFromFees[account] = false;
     }
@@ -124,25 +114,25 @@ abstract contract Taxable is Owned, Tradable {
         _isExcludedFromFees[account] = true;
     }
 
-    function setBuyFees(uint8 newDevBuyFee, uint8 newRewardsBuyFee, uint8 newMarketingBuyFee, uint8 newTeamBuyFee, uint8 newCharityBuyFee, uint8 newLiqBuyFee) external onlyOwner {
-        uint8 newTotalBuyFees = newDevBuyFee + newRewardsBuyFee + newMarketingBuyFee + newTeamBuyFee + newCharityBuyFee + newLiqBuyFee;
+    function setBuyFees(uint8 newDevBuyFee, uint8 newRewardsBuyFee, uint8 newMarketingBuyFee, uint8 newTeamBuyFee, uint8 newLiqBuyFee) external onlyOwner {
+        uint8 newTotalBuyFees = newDevBuyFee + newRewardsBuyFee + newMarketingBuyFee + newTeamBuyFee + newLiqBuyFee;
         require(!inSwapAndLiquify, "inSwapAndLiquify");
         require(newDevBuyFee <= _maxDevFee, "Cannot set dev fee higher than max");
         require(newTotalBuyFees <= _maxFees, "Cannot set total buy fees higher than max");
 
         _buyTaxes = Taxes({ devFee: newDevBuyFee, rewardsFee: newRewardsBuyFee, marketingFee: newMarketingBuyFee,
-            teamFee: newTeamBuyFee, charityFee: newCharityBuyFee, liqFee: newLiqBuyFee });
+            teamFee: newTeamBuyFee, liqFee: newLiqBuyFee });
         _totalBuyTaxes = newTotalBuyFees;
     }
 
-    function setSellFees(uint8 newDevSellFee, uint8 newRewardsSellFee, uint8 newMarketingSellFee, uint8 newTeamSellFee, uint8 newCharitySellFee, uint8 newLiqSellFee) external onlyOwner {
-        uint8 newTotalSellFees = newDevSellFee + newRewardsSellFee + newMarketingSellFee + newTeamSellFee + newCharitySellFee + newLiqSellFee;
+    function setSellFees(uint8 newDevSellFee, uint8 newRewardsSellFee, uint8 newMarketingSellFee, uint8 newTeamSellFee, uint8 newLiqSellFee) external onlyOwner {
+        uint8 newTotalSellFees = newDevSellFee + newRewardsSellFee + newMarketingSellFee + newTeamSellFee + newLiqSellFee;
         require(!inSwapAndLiquify, "inSwapAndLiquify");
         require(newDevSellFee <= _maxDevFee, "Cannot set dev fee higher than max");
         require(newTotalSellFees <= _maxFees, "Cannot set total sell fees higher than max");
 
         _sellTaxes = Taxes({ devFee: newDevSellFee, rewardsFee: newRewardsSellFee, marketingFee: newMarketingSellFee,
-            teamFee: newTeamSellFee, charityFee: newCharitySellFee, liqFee: newLiqSellFee });
+            teamFee: newTeamSellFee, liqFee: newLiqSellFee });
         _totalSellTaxes = newTotalSellFees;
     }
 
@@ -209,17 +199,15 @@ abstract contract Taxable is Owned, Tradable {
         uint256 rewardsTokens = (txType == BUYTX) ? amount.mul(_buyTaxes.rewardsFee).div(100) : amount.mul(_sellTaxes.rewardsFee).div(100);
         uint256 marketingTokens = (txType == BUYTX) ? amount.mul(_buyTaxes.marketingFee).div(100) : amount.mul(_sellTaxes.marketingFee).div(100);
         uint256 teamTokens = (txType == BUYTX) ? amount.mul(_buyTaxes.teamFee).div(100) : amount.mul(_sellTaxes.teamFee).div(100);
-        uint256 charityTokens = (txType == BUYTX) ? amount.mul(_buyTaxes.charityFee).div(100) : amount.mul(_sellTaxes.charityFee).div(100);
         uint256 liqTokens = (txType == BUYTX) ? amount.mul(_buyTaxes.liqFee).div(100) : amount.mul(_sellTaxes.liqFee).div(100);
 
         _devTokensCollected = _devTokensCollected.add(devTokens);
         _rewardsTokensCollected = _rewardsTokensCollected.add(rewardsTokens);
         _marketingTokensCollected = _marketingTokensCollected.add(marketingTokens);
         _teamTokensCollected = _teamTokensCollected.add(teamTokens);
-        _charityTokensCollected = _charityTokensCollected.add(charityTokens);
         _liqTokensCollected = _liqTokensCollected.add(liqTokens);
 
-        return devTokens.add(rewardsTokens).add(marketingTokens).add(teamTokens).add(charityTokens).add(liqTokens);
+        return devTokens.add(rewardsTokens).add(marketingTokens).add(teamTokens).add(liqTokens);
     }
 
     function swapCollectedFeesForFunding() private lockTheSwap {
@@ -232,7 +220,7 @@ abstract contract Taxable is Owned, Tradable {
         uint256 otherHalfLiq = _liqTokensCollected.sub(halfLiq);
 
         uint256 totalAmountToSwap = _devTokensCollected.add(_rewardsTokensCollected).add(_marketingTokensCollected)
-            .add(_teamTokensCollected).add(_charityTokensCollected).add(halfLiq);
+            .add(_teamTokensCollected).add(halfLiq);
 
         swapTokensForNative(totalAmountToSwap);
 
@@ -242,20 +230,17 @@ abstract contract Taxable is Owned, Tradable {
         uint256 marketingFunds = newFunds.mul(_marketingTokensCollected).div(totalAmountToSwap);
         uint256 rewardsFunds = newFunds.mul(_rewardsTokensCollected).div(totalAmountToSwap);
         uint256 teamFunds = newFunds.mul(_teamTokensCollected).div(totalAmountToSwap);
-        uint256 charityFunds = newFunds.mul(_charityTokensCollected).div(totalAmountToSwap);
         uint256 devFunds = newFunds.sub(liqFunds).sub(marketingFunds);
 
         addLiquidity(otherHalfLiq, liqFunds);
         IERC20(router.WETH()).transfer(_marketingAddress, marketingFunds);
         IERC20(router.WETH()).transfer(_devAddress, devFunds);
         IERC20(router.WETH()).transfer(_teamAddress, teamFunds);
-        IERC20(router.WETH()).transfer(_charityAddress, charityFunds);
         try distributor.deposit{value: rewardsFunds}() {} catch {}
 
         _devTokensCollected = 0;
         _marketingTokensCollected = 0;
         _liqTokensCollected = 0;
-        _charityTokensCollected = 0;
         _rewardsTokensCollected = 0;
         _teamTokensCollected = 0;
     }

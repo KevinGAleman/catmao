@@ -15,8 +15,11 @@ contract DividendDistributor {
         uint256 totalRealised;
     }
 
-    IERC20 RWRD = IERC20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
-    address WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+    // IERC20 BUSDReward = IERC20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56); // Mainnet
+    // address WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c; // Mainnet
+    IERC20 BUSDReward = IERC20(0x8301F2213c0eeD49a7E28Ae4c3e91722919B8B47); // Testnet
+    address WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd; // Testnet
+
     IDEXRouter router;
 
     address[] shareholders;
@@ -48,9 +51,7 @@ contract DividendDistributor {
     }
 
     constructor (address _router) {
-        router = _router != address(0)
-            ? IDEXRouter(_router)
-            : IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        router = IDEXRouter(_router);
         _token = msg.sender;
     }
 
@@ -81,11 +82,11 @@ contract DividendDistributor {
     }
 
     function deposit() external payable onlyToken {
-        uint256 balanceBefore = RWRD.balanceOf(address(this));
+        uint256 balanceBefore = BUSDReward.balanceOf(address(this));
 
         address[] memory path = new address[](2);
         path[0] = WBNB;
-        path[1] = address(RWRD);
+        path[1] = address(BUSDReward);
 
         router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: msg.value}(
             0,
@@ -94,7 +95,7 @@ contract DividendDistributor {
             block.timestamp
         );
 
-        uint256 amount = RWRD.balanceOf(address(this)).sub(balanceBefore);
+        uint256 amount = BUSDReward.balanceOf(address(this)).sub(balanceBefore);
 
         totalDividends = totalDividends.add(amount);
         dividendsPerShare = dividendsPerShare.add(dividendsPerShareAccuracyFactor.mul(amount).div(totalShares));
@@ -137,7 +138,7 @@ contract DividendDistributor {
         uint256 amount = getUnpaidEarnings(shareholder);
         if(amount > 0){
             totalDistributed = totalDistributed.add(amount);
-            RWRD.transfer(shareholder, amount);
+            BUSDReward.transfer(shareholder, amount);
             shareholderClaims[shareholder] = block.timestamp;
             shares[shareholder].totalRealised = shares[shareholder].totalRealised.add(amount);
             shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);

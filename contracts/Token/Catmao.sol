@@ -53,15 +53,14 @@ contract Catmao is Context, Owned, Taxable {
     address payable _CdevAddress = payable(address(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65));
     address payable _CmarketingAddress = payable(address(0x90F79bf6EB2c4f870365E785982E1f101E93b906));
     address payable _CteamAddress = payable(address(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65));
-    address payable _CcharityAddress = payable(address(0x90F79bf6EB2c4f870365E785982E1f101E93b906));
 
     // Buy and sell fees will start at 99% to prevent bots/snipers at launch, 
     // but will not be allowed to be set this high ever again.
     constructor () 
     Owned(_msgSender())
-    Taxable(_Csymbol, _Cname, _CtokenDistribution, _CdevAddress, _CmarketingAddress, _CteamAddress, _CcharityAddress,
-            Taxes({ devFee: 1, rewardsFee: 2, marketingFee: 31, teamFee: 3, charityFee: 2, liqFee: 60 }), 
-            Taxes({ devFee: 1, rewardsFee: 2, marketingFee: 31, teamFee: 3, charityFee: 2, liqFee: 60 }), 
+    Taxable(_Csymbol, _Cname, _CtokenDistribution, _CdevAddress, _CmarketingAddress, _CteamAddress,
+            Taxes({ devFee: 1, rewardsFee: 2, marketingFee: 31, teamFee: 5, liqFee: 60 }), 
+            Taxes({ devFee: 1, rewardsFee: 2, marketingFee: 31, teamFee: 5, liqFee: 60 }), 
             _CmaxFees, _CmaxDevFee, _CliquifyThreshhold) {
         _balances[_msgSender()] = _totalSupply;
         emit Transfer(address(0), _msgSender(), _totalSupply);
