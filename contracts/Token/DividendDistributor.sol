@@ -1,11 +1,10 @@
 pragma solidity ^0.8.0;
 
 import "./IDEXRouter.sol";
-import "./IDividendDistributor.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract DividendDistributor is IDividendDistributor {
+contract DividendDistributor {
     using SafeMath for uint256;
 
     address _token;
@@ -55,12 +54,17 @@ contract DividendDistributor is IDividendDistributor {
         _token = msg.sender;
     }
 
-    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external override onlyToken {
+    function setNewRouter(address newRouter) external onlyToken {
+        require(newRouter != address(router));
+        router = IDEXRouter(newRouter);
+    }
+
+    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external onlyToken {
         minPeriod = _minPeriod;
         minDistribution = _minDistribution;
     }
 
-    function setShare(address shareholder, uint256 amount) external override onlyToken {
+    function setShare(address shareholder, uint256 amount) external onlyToken {
         if(shares[shareholder].amount > 0){
             distributeDividend(shareholder);
         }
@@ -76,7 +80,7 @@ contract DividendDistributor is IDividendDistributor {
         shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
     }
 
-    function deposit() external payable override onlyToken {
+    function deposit() external payable onlyToken {
         uint256 balanceBefore = RWRD.balanceOf(address(this));
 
         address[] memory path = new address[](2);
@@ -96,7 +100,7 @@ contract DividendDistributor is IDividendDistributor {
         dividendsPerShare = dividendsPerShare.add(dividendsPerShareAccuracyFactor.mul(amount).div(totalShares));
     }
 
-    function process(uint256 gas) external override onlyToken {
+    function process(uint256 gas) external onlyToken {
         uint256 shareholderCount = shareholders.length;
 
         if(shareholderCount == 0) { return; }

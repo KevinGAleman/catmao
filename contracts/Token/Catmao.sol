@@ -52,9 +52,8 @@ contract Catmao is Context, Owned, Taxable {
     // TODO VERY IMPORTANT! These are testnet wallets
     address payable _CdevAddress = payable(address(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65));
     address payable _CmarketingAddress = payable(address(0x90F79bf6EB2c4f870365E785982E1f101E93b906));
-    address payable _CteamAddress = payable(address(0x0));
-    address payable _CcharityAddress = payable(address(0x0));
-
+    address payable _CteamAddress = payable(address(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65));
+    address payable _CcharityAddress = payable(address(0x90F79bf6EB2c4f870365E785982E1f101E93b906));
 
     // Buy and sell fees will start at 99% to prevent bots/snipers at launch, 
     // but will not be allowed to be set this high ever again.

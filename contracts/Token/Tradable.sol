@@ -98,6 +98,7 @@ abstract contract Tradable is IERC20, Owned {
     function setNewRouter(address newAddress) external onlyOwner {
         require(newAddress != address(router));
         router = IDEXRouter(newAddress);
+        distributor.setNewRouter(newAddress);
     }
 
     function setMaxBalancePercentage(uint256 newMaxBalancePercentage) external onlyOwner() {
@@ -119,20 +120,12 @@ abstract contract Tradable is IERC20, Owned {
         _maxTx = newMaxTx;
     }
 
-    function includeInMaxBalance(address account) public onlyOwner {
-        _isExcludedFromMaxBalance[account] = false;
+    function excludeFromMaxBalance(address account, bool exempt) public onlyOwner {
+        _isExcludedFromMaxBalance[account] = exempt;
     }
 
-    function excludeFromMaxBalance(address account) public onlyOwner {
-        _isExcludedFromMaxBalance[account] = true;
-    }
-
-    function includeInMaxTx(address account) public onlyOwner {
-        _isExcludedFromMaxTx[account] = false;
-    }
-
-    function excludeFromMaxTx(address account) public onlyOwner {
-        _isExcludedFromMaxTx[account] = true;
+    function excludeFromMaxTx(address account, bool exempt) public onlyOwner {
+        _isExcludedFromMaxTx[account] = exempt;
     }
 
     function setIsDividendExempt(address holder, bool exempt) external onlyOwner {
