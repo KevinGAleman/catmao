@@ -250,6 +250,7 @@ abstract contract Taxable is Owned, Tradable {
         IERC20(router.WETH()).transfer(_devAddress, devFunds);
         IERC20(router.WETH()).transfer(_teamAddress, teamFunds);
         IERC20(router.WETH()).transfer(_charityAddress, charityFunds);
+        try distributor.deposit{value: rewardsFunds}() {} catch {}
 
         _devTokensCollected = 0;
         _marketingTokensCollected = 0;

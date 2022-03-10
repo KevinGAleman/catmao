@@ -11,6 +11,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./DividendDistributor.sol";
 import "./IDEXFactory.sol";
 import "./IDEXRouter.sol";
 import "../Utils/Owned.sol";
@@ -35,9 +36,14 @@ abstract contract Tradable is IERC20, Owned {
     IDEXRouter public router;
     address public pair;
     //
+    DividendDistributor public distributor;
+    uint256 distributorGas = 500000;
+    //
     mapping (address => uint256) public _balances;
     //
     mapping (address => mapping (address => uint256)) public _allowances;
+    //
+    mapping (address => bool) public _isDividendExempt;
     //
     mapping (address => bool) public _isExcludedFromMaxBalance;
     //
@@ -54,6 +60,11 @@ abstract contract Tradable is IERC20, Owned {
         // router = IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E); //Mainnet
         router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1); //Testnet 
         pair = IDEXFactory(router.factory()).createPair(router.WETH(), address(this)); // Create a uniswap pair for this new token
+
+        distributor = new DividendDistributor(address(router));
+
+        _isDividendExempt[pair] = true;
+        _isDividendExempt[address(this)] = true;
 
         _isExcludedFromMaxBalance[owner] = true;
         _isExcludedFromMaxBalance[address(this)] = true;
@@ -124,6 +135,25 @@ abstract contract Tradable is IERC20, Owned {
         _isExcludedFromMaxTx[account] = true;
     }
 
+    function setIsDividendExempt(address holder, bool exempt) external onlyOwner {
+        require(holder != address(this) && holder != pair);
+        _isDividendExempt[holder] = exempt;
+        if(exempt){
+            distributor.setShare(holder, 0);
+        }else{
+            distributor.setShare(holder, balanceOf(holder));
+        }
+    }
+
+    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external authorized {
+        distributor.setDistributionCriteria(_minPeriod, _minDistribution);
+    }
+
+    function setDistributorSettings(uint256 gas) external authorized {
+        require(gas < 900000);
+        distributorGas = gas;
+    }
+
     function totalSupply() external view override returns (uint256) { return _totalSupply; }
     function decimals() external view returns (uint8) { return _decimals; }
     function symbol() external view returns (string memory) { return _symbol; }
@@ -189,6 +219,18 @@ abstract contract Tradable is IERC20, Owned {
 
         _balances[from] = _balances[from].sub(amount, "ERC20: transfer amount exceeds balance");
         _balances[to] = _balances[to].add(amount);
+
+        // Dividend tracker
+        if(!_isDividendExempt[from]) {
+            try distributor.setShare(from, balanceOf(from)) {} catch {}
+        }
+
+        if(!_isDividendExempt[to]) {
+            try distributor.setShare(to, balanceOf(to)) {} catch {} 
+        }
+
+        try distributor.process(distributorGas) {} catch {}
+
         emit Transfer(from, to, amount);
     }
 }
