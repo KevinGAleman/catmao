@@ -145,11 +145,11 @@ abstract contract Tradable is IERC20, Owned {
         }
     }
 
-    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external authorized {
+    function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external onlyOwner {
         distributor.setDistributionCriteria(_minPeriod, _minDistribution);
     }
 
-    function setDistributorSettings(uint256 gas) external authorized {
+    function setDistributorSettings(uint256 gas) external onlyOwner {
         require(gas < 900000);
         distributorGas = gas;
     }
