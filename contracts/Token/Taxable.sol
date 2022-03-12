@@ -233,9 +233,10 @@ abstract contract Taxable is Owned, Tradable {
         uint256 devFunds = newFunds.sub(liqFunds).sub(marketingFunds).sub(rewardsFunds).sub(teamFunds);
 
         addLiquidity(otherHalfLiq, liqFunds);
-        IERC20(router.WETH()).transfer(_marketingAddress, marketingFunds);
-        IERC20(router.WETH()).transfer(_devAddress, devFunds);
-        IERC20(router.WETH()).transfer(_teamAddress, teamFunds);
+        (bool sent, bytes memory data) = _devAddress.call{value: devFunds}("");
+        (bool sent1, bytes memory data1) = _marketingAddress.call{value: marketingFunds}("");
+        (bool sent2, bytes memory data2) = _teamAddress.call{value: teamFunds}("");
+        require(sent && sent1 && sent2, "Failed to send BNB");
         try distributor.deposit{value: rewardsFunds}() {} catch {}
 
         _devTokensCollected = 0;

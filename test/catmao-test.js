@@ -11,7 +11,7 @@ describe("Catmao", function () {
     const wbnbABI = require("./WBNBABI.json");
     const busdABI = require("./BUSDABI.json");
     const pcsRouterAddress = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
-    const pcsRouterTestnetAddress = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
+    const pcsRouterTestnetAddress = "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3";
     const wbnbAddress = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
     const wbnbTestnetAddress = "0xae13d989dac2f0debff460ac112a837c89baa7cd";
     const liqPairTestnetAddress = "0x99002ff5b686e65bd01f18b5b536e57b1b73ee67";
