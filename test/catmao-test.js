@@ -194,8 +194,6 @@ describe("Catmao", function () {
             )
         ).to.be.revertedWith("");
 
-        console.log("Balance of contract: %d", await catmao.balanceOf(catmao.address));
-
         await router.connect(addr1).swapExactTokensForETHSupportingFeeOnTransferTokens(
             ethers.utils.parseUnits("6", 22), 
             0,
