@@ -30,10 +30,10 @@ describe("Catmao", function () {
     });
 
     it("Should be created with the appropriate token distribution", async function () {
-        expect(await catmao.totalSupply()).to.equal(ethers.utils.parseUnits("1", 25));
+        expect(await catmao.totalSupply()).to.equal(ethers.utils.parseUnits("1", 26));
         expect(await catmao.decimals()).to.equal(18);
-        expect(await catmao._maxBalance()).to.equal(ethers.utils.parseUnits("2", 23));
-        expect(await catmao._maxTx()).to.equal(ethers.utils.parseUnits("5", 22));
+        expect(await catmao._maxBalance()).to.equal(ethers.utils.parseUnits("2", 24));
+        expect(await catmao._maxTx()).to.equal(ethers.utils.parseUnits("5", 23));
         expect(await catmao.name()).to.equal("Catmao");
         expect(await catmao.symbol()).to.equal("CATMAO");
     });
@@ -115,8 +115,8 @@ describe("Catmao", function () {
         await catmao.setMaxBalancePercentage(3);
         await catmao.setMaxTxPercentage(10);
 
-        expect(await catmao._maxBalance()).to.equal(ethers.utils.parseUnits("3", 23));
-        expect(await catmao._maxTx()).to.equal(ethers.utils.parseUnits("10", 22));
+        expect(await catmao._maxBalance()).to.equal(ethers.utils.parseUnits("3", 24));
+        expect(await catmao._maxTx()).to.equal(ethers.utils.parseUnits("10", 23));
     });
 
     it("Should not tax the hell out of based buyers who wait for the launch signal", async function () {
@@ -148,7 +148,7 @@ describe("Catmao", function () {
     });
 
     it("Should not allow a wallet to accumulate more than max balance", async function () {
-        var wbnbPurchaseAmount = ethers.utils.parseUnits("15", 15);
+        var wbnbPurchaseAmount = ethers.utils.parseUnits("15", 16);
         
         for (var i = 0; i<4; i++) {
             await router.connect(addr1).swapExactETHForTokensSupportingFeeOnTransferTokens(
@@ -194,6 +194,8 @@ describe("Catmao", function () {
             )
         ).to.be.revertedWith("");
 
+        console.log("Balance of contract: %d", await catmao.balanceOf(catmao.address));
+
         await router.connect(addr1).swapExactTokensForETHSupportingFeeOnTransferTokens(
             ethers.utils.parseUnits("6", 22), 
             0,
@@ -221,7 +223,7 @@ describe("Catmao", function () {
         await expect(catmao.setMaxBalancePercentage(1)).to.be.revertedWith("");
         await expect(catmao.setMaxTxPercentage(4)).to.be.revertedWith("");
 
-        expect(await catmao._maxBalance()).to.equal(ethers.utils.parseUnits("3", 23));
-        expect(await catmao._maxTx()).to.equal(ethers.utils.parseUnits("10", 22));
+        expect(await catmao._maxBalance()).to.equal(ethers.utils.parseUnits("3", 24));
+        expect(await catmao._maxTx()).to.equal(ethers.utils.parseUnits("10", 23));
     });
 });

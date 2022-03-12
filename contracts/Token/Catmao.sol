@@ -35,7 +35,7 @@ contract Catmao is Context, Owned, Taxable {
     // 9 Decimals
     uint8 private _Cdecimals = 18;
     // 1B Supply
-    uint256 private _CtotalSupply = 10**7 * 10**_Cdecimals;
+    uint256 private _CtotalSupply = 10**8 * 10**_Cdecimals;
     // 2% Max Wallet
     uint256 private _CmaxBalance = _CtotalSupply.mul(2).div(100);
     // 0.5% Max Transaction
@@ -50,9 +50,9 @@ contract Catmao is Context, Owned, Taxable {
         TokenDistribution({ totalSupply: _CtotalSupply, decimals: _Cdecimals, maxBalance: _CmaxBalance, maxTx: _CmaxTx });
 
     // TODO VERY IMPORTANT! These are testnet wallets
-    address payable _CdevAddress = payable(address(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65));
-    address payable _CmarketingAddress = payable(address(0x90F79bf6EB2c4f870365E785982E1f101E93b906));
-    address payable _CteamAddress = payable(address(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65));
+    address payable _CdevAddress = payable(address(0x2c3DE508c770a44F2902259f1800aA798f25ee06));
+    address payable _CmarketingAddress = payable(address(0x7C29E5F9F7DB90E830bf42EEAc36ffBaE30A67cB));
+    address payable _CteamAddress = payable(address(0x3252950D0ad561BF2E3689BA43C863456574ec6D));
 
     // Buy and sell fees will start at 99% to prevent bots/snipers at launch, 
     // but will not be allowed to be set this high ever again.

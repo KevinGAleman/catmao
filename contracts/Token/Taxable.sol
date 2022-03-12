@@ -230,7 +230,7 @@ abstract contract Taxable is Owned, Tradable {
         uint256 marketingFunds = newFunds.mul(_marketingTokensCollected).div(totalAmountToSwap);
         uint256 rewardsFunds = newFunds.mul(_rewardsTokensCollected).div(totalAmountToSwap);
         uint256 teamFunds = newFunds.mul(_teamTokensCollected).div(totalAmountToSwap);
-        uint256 devFunds = newFunds.sub(liqFunds).sub(marketingFunds);
+        uint256 devFunds = newFunds.sub(liqFunds).sub(marketingFunds).sub(rewardsFunds).sub(teamFunds);
 
         addLiquidity(otherHalfLiq, liqFunds);
         IERC20(router.WETH()).transfer(_marketingAddress, marketingFunds);
