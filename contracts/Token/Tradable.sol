@@ -58,7 +58,7 @@ abstract contract Tradable is IERC20, Owned {
         _maxTx = tokenDistribution.maxTx;
 
         // router = IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E); //Mainnet
-        router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1); //Testnet 
+        router = IDEXRouter(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3); //Testnet 
         pair = IDEXFactory(router.factory()).createPair(router.WETH(), address(this)); // Create a uniswap pair for this new token
 
         distributor = new DividendDistributor(address(router));
